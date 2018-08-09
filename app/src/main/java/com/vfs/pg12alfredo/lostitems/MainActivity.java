@@ -26,15 +26,15 @@ public class MainActivity extends AppCompatActivity {
     private void setTabLayoutIcons() {
         TabLayout.Tab tabOne = tabLayout.getTabAt(0);
         if (tabOne != null) {
-            tabOne.setIcon(android.R.drawable.ic_dialog_map);
+            tabOne.setIcon(R.drawable.ic_list_item);
         }
         TabLayout.Tab tabTwo = tabLayout.getTabAt(1);
         if (tabTwo != null) {
-            tabTwo.setIcon(android.R.drawable.ic_dialog_info);
+            tabTwo.setIcon(R.drawable.ic_map_items);
         }
         TabLayout.Tab tabThree = tabLayout.getTabAt(2);
         if (tabThree != null) {
-            tabThree.setIcon(android.R.drawable.ic_dialog_email);
+            tabThree.setIcon(R.drawable.ic_settings);
         }
     }
 }
