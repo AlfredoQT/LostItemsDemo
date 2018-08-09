@@ -23,11 +23,11 @@
         android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp">
         <EditText
-            android:id="@+id/login_email_edit_text"
+            android:id="@+id/signup_email_edit_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="textEmailAddress"
-            android:hint="@string/login_email_hint"/>
+            android:hint="Email"/>
     </android.support.design.widget.TextInputLayout>
     <android.support.design.widget.TextInputLayout
         android:layout_width="match_parent"
@@ -35,30 +35,30 @@
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp">
         <EditText
-            android:id="@+id/login_password_edit_text"
+            android:id="@+id/signup_password_edit_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="textPassword"
-            android:hint="@string/login_password_hint"/>
+            android:hint="Password"/>
     </android.support.design.widget.TextInputLayout>
-    
+
     <Button
-        android:id="@+id/login_login_button"
+        android:id="@+id/signup_signup_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:layout_marginBottom="24dp"
-        android:text="Login"/>
+        android:text="Signup"/>
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <TextView
-            android:id="@+id/login_new_account"
+            android:id="@+id/signup_already_member"
             android:layout_centerHorizontal="true"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAlignment="center"
-            android:text="New account?"/>
+            android:text="Already a member?"/>
     </RelativeLayout>
 
 
