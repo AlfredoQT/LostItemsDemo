@@ -31,8 +31,9 @@ public class SetItemActivity extends FragmentActivity implements OnMapReadyCallb
 
         // Add default marker
         LatLng sydney = new LatLng(-34, 151);
-        selectedMarker = map.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+        selectedMarker = map.addMarker(new MarkerOptions().position(sydney));
         map.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        map.animateCamera(CameraUpdateFactory.zoomTo(14.0f));
 
         map.setOnMapClickListener(this);
     }
@@ -40,5 +41,7 @@ public class SetItemActivity extends FragmentActivity implements OnMapReadyCallb
     @Override
     public void onMapClick(LatLng latLng) {
         selectedMarker.setPosition(latLng);
+        map.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+        map.animateCamera(CameraUpdateFactory.zoomTo(14.0f));
     }
 }
