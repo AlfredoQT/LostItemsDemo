@@ -18,6 +18,7 @@ public class ItemsListFragment extends Fragment {
 
     private FloatingActionButton floatingActionButton;
 
+
     public ItemsListFragment() {
         // Required empty public constructor
     }
@@ -41,4 +42,8 @@ public class ItemsListFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
 }

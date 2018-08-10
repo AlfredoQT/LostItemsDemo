@@ -1,5 +1,6 @@
 package com.vfs.pg12alfredo.lostitems;
 
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.GeoPoint;
 
 public class Item {
@@ -9,16 +10,16 @@ public class Item {
     private GeoPoint location;
     private boolean found;
     private String description;
-    private String owner;
+    private DocumentReference user;
     private String image;
 
-    public Item(String uid, String name, GeoPoint location, boolean found, String description, String owner, String image) {
+    public Item(String uid, String name, GeoPoint location, boolean found, String description, DocumentReference user, String image) {
         this.uid = uid;
         this.name = name;
         this.location = location;
         this.found = found;
         this.description = description;
-        this.owner = owner;
+        this.user = user;
         this.image = image;
     }
 
@@ -62,12 +63,12 @@ public class Item {
         this.description = description;
     }
 
-    public String getOwner() {
-        return owner;
+    public DocumentReference getUser() {
+        return user;
     }
 
-    public void setOwner(String owner) {
-        this.owner = owner;
+    public void setUser(DocumentReference owner) {
+        this.user = owner;
     }
 
     public String getImage() {
