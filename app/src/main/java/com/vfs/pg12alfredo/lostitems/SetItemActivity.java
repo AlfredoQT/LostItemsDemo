@@ -144,31 +144,7 @@ public class SetItemActivity extends FragmentActivity implements OnMapReadyCallb
         }
 
         Bitmap bitmap = ((BitmapDrawable) selectImageView.getDrawable()).getBitmap();
-        if (bitmap != null) {
-            // Construct a byte array and upload it to the cloud storage
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            // Some high quality JPEG
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-            byte[] data = baos.toByteArray();
 
-            // Child reference
-            final String childReference = "images/" + UUID.randomUUID().toString();
-
-            // Here it goes
-            UploadTask uploadTask = storageReference.child(childReference).putBytes(data);
-            uploadTask.addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Toast.makeText(SetItemActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
-                }
-            })
-            .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    saveToItemCollection(childReference);
-                }
-            });
-        }
     }
 
     private void saveToItemCollection(String imageStorageReference) {

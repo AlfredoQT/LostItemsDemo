@@ -34,4 +34,8 @@ public class ItemRecyclerAdapter extends RecyclerView.Adapter<ItemHolder> {
     public int getItemCount() {
         return items.size();
     }
+
+    // I took this idea from FriendlyPix app https://github.com/firebase/friendlypix/blob/d911f6b6cf33efd63fb09dcd53207995cd437841/android/app/src/main/java/com/google/firebase/samples/apps/friendlypix/FirebasePostQueryAdapter.java
+    // Every time there is a change in an item in the database the interface will be called, so the holder is updated in real time by the fragment
+
 }
