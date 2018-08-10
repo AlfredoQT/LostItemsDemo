@@ -108,13 +108,6 @@ public class UploadItemTaskFragment extends Fragment {
             // Get the references to the storage
             StorageReference storageReference = FirebaseStorage.getInstance().getReference();
 
-            // Get a reference to the authenticated user
-            final FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-
-            final FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-            Log.i("SAVE_ITEM_USER_ID", currentUser.getUid());
-
             // First step, store the image
             // Construct a byte array and upload it to the cloud storage
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -145,10 +138,10 @@ public class UploadItemTaskFragment extends Fragment {
                     data.put("image", imageReference);
                     data.put("found", false);
                     data.put("location", itemLocation);
-                    data.put("user", db.collection("users").document(currentUser.getUid()));
+                    data.put("user", FirestoreUtils.getCurretUserReference());
 
                     // Save
-                    db.collection("items").document(UUID.randomUUID().toString())
+                    FirestoreUtils.getItemsCollection().document(UUID.randomUUID().toString())
                         .set(data)
                         .addOnFailureListener(new OnFailureListener() {
                             @Override

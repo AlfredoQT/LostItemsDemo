@@ -12,11 +12,26 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
+
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class ItemsListFragment extends Fragment {
+
+    FirebaseFirestore db;
+
+    // Types of fragment
+    public static final int TYPE_OWN = 0;
+    public static final int TYPE_ALL = 1;
+
+    // Just to not get lost
+    private static final String TYPE_KEY = "TYPE";
 
     private FloatingActionButton floatingActionButton;
 
@@ -32,6 +47,23 @@ public class ItemsListFragment extends Fragment {
 
     public ItemsListFragment() {
         // Required empty public constructor
+    }
+
+    // Only because we are going to reuse the fragment, so we need different types
+    // I use a static method because I need to set some arguments to the fragment
+    // I should probably use an enum, but I can only put serialize fields on the bundle
+    public static ItemsListFragment newInstance(int type) {
+        ItemsListFragment fragment = new ItemsListFragment();
+
+        // This arguments will be accessed on onActivityCreated
+        Bundle args = new Bundle();
+
+        args.putInt(TYPE_KEY, type);
+
+        // Attach the args to the fragment
+        fragment.setArguments(args);
+
+        return fragment;
     }
 
     @Override
@@ -79,6 +111,25 @@ public class ItemsListFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        // Here is where we get
+        // We are going to listen to some changes in the database depending on the type passed when creating the fragment
+        int type = getArguments().getInt(TYPE_KEY);
+
+        switch (type) {
+            case TYPE_OWN:
+                // Listen to changes of our items
+                FirestoreUtils.getItemsCollection()
+                    .whereEqualTo("user", FirestoreUtils.getCurretUserReference())
+                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                        @Override
+                        public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+
+                        }
+                    });
+                break;
+            case TYPE_ALL:
+                break;
+            default:
+                throw new RuntimeException("A type for ItemsListFragment must be specified");
+        }
     }
 }
