@@ -1,21 +1,26 @@
 package com.vfs.pg12alfredo.lostitems;
 
-import android.app.Fragment;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-
+import android.util.Log;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 // I will add this fragment programmatically to the set item activity
@@ -73,7 +78,9 @@ public class UploadItemTaskFragment extends Fragment {
 
     // Will be called on the activities that attach this fragment to upload the items
     public void uploadItem(Bitmap itemImage, String itemName, String itemDescription, GeoPoint itemLocation) {
-        // TODO: Execute the asynchronous task
+        // Execute the async task
+        UploadItemTask uploadItemTask = new UploadItemTask(itemImage, itemName, itemDescription, itemLocation);
+        uploadItemTask.execute();
     }
 
     // We will not be accepting any parameters or return anything, so everything is void
@@ -101,6 +108,13 @@ public class UploadItemTaskFragment extends Fragment {
             // Get the references to the storage
             StorageReference storageReference = FirebaseStorage.getInstance().getReference();
 
+            // Get a reference to the authenticated user
+            final FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
+            final FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+            Log.i("SAVE_ITEM_USER_ID", currentUser.getUid());
+
             // First step, store the image
             // Construct a byte array and upload it to the cloud storage
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -109,24 +123,48 @@ public class UploadItemTaskFragment extends Fragment {
             byte[] data = baos.toByteArray();
 
             // Child reference
-            final String childReference = "images/" + UUID.randomUUID().toString();
+            final String imageReference = "images/" + UUID.randomUUID().toString();
 
             // Here it goes
-            UploadTask uploadTask = storageReference.child(childReference).putBytes(data);
+            UploadTask uploadTask = storageReference.child(imageReference).putBytes(data);
             uploadTask.addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
                     // Communicate back to the activity that there was an error
-                    // TODO: Put
+                    // TODO: Put this into string reources
                     uploadItemTaskCallbacks.onItemUploaded("Item upload failed");
                 }
             })
-                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            saveToItemCollection(childReference);
-                        }
-                    });
+            .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("name", itemName);
+                    data.put("description", itemDescription);
+                    data.put("image", imageReference);
+                    data.put("found", false);
+                    data.put("location", itemLocation);
+                    data.put("user", db.collection("users").document(currentUser.getUid()));
+
+                    // Save
+                    db.collection("items").document(UUID.randomUUID().toString())
+                        .set(data)
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                uploadItemTaskCallbacks.onItemUploaded("Item upload failed");
+                            }
+                        })
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                // No errors!
+                                uploadItemTaskCallbacks.onItemUploaded(null);
+                            }
+                        });
+                }
+            });
 
             return null;
         }
