@@ -10,9 +10,9 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -29,24 +29,9 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
-import java.io.ByteArrayOutputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
-public class SetItemActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener {
+public class SetItemActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener, UploadItemTaskFragment.UploadItemTaskCallbacks {
 
     private GoogleMap map;
     private Marker selectedMarker;
@@ -59,29 +44,30 @@ public class SetItemActivity extends FragmentActivity implements OnMapReadyCallb
     // The image uri that we get from the picker
     private Uri selectedImageUri;
 
-    // Firebase storage ref
-    private StorageReference storageReference;
+    // The reference to the fragment that is going to take care of the async task of uploading an item
+    private UploadItemTaskFragment uploadItemTaskFragment;
 
-    // We need a reference to the user
-    private FirebaseAuth auth;
-
-    // Also to the store to save the item
-    private FirebaseFirestore db;
+    private static final String UPLOAD_ITEM_TASK_FRAGMENT_TAG = "UPLOAD_ITEM_TASK_FRAGMENT";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_set_item);
 
+        // Since the upload item task fragment is retained on config changes
+        // ... we can get the existing one when the activity restarts
+        FragmentManager fm = getSupportFragmentManager();
+        uploadItemTaskFragment = (UploadItemTaskFragment) fm.findFragmentByTag(UPLOAD_ITEM_TASK_FRAGMENT_TAG);
+
+        // Create it programmatically the first time: https://developer.android.com/guide/components/fragments
+        if (uploadItemTaskFragment == null) {
+            uploadItemTaskFragment = new UploadItemTaskFragment();
+            // Commit the fragment
+            fm.beginTransaction().add(uploadItemTaskFragment, UPLOAD_ITEM_TASK_FRAGMENT_TAG).commit();
+        }
+
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.set_item_map);
         mapFragment.getMapAsync(this);
-
-        // Get the reference from firebase storage
-        storageReference = FirebaseStorage.getInstance().getReference();
-
-        auth = FirebaseAuth.getInstance();
-
-        db = FirebaseFirestore.getInstance();
 
         // Set the toolbar
         toolbar = findViewById(R.id.set_item_toolbar);
@@ -143,64 +129,17 @@ public class SetItemActivity extends FragmentActivity implements OnMapReadyCallb
             return;
         }
 
+        // TODO: Validate other fields
+
+        // Prepare everything fo
         Bitmap bitmap = ((BitmapDrawable) selectImageView.getDrawable()).getBitmap();
-        if (bitmap != null) {
-            // Construct a byte array and upload it to the cloud storage
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            // Some high quality JPEG
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-            byte[] data = baos.toByteArray();
+        String name = nameEditText.getText().toString();
+        String description = descriptionEditText.getText().toString();
+        GeoPoint location = new GeoPoint(selectedMarker.getPosition().latitude, selectedMarker.getPosition().longitude);
 
-            // Child reference
-            final String childReference = "images/" + UUID.randomUUID().toString();
-
-            // Here it goes
-            UploadTask uploadTask = storageReference.child(childReference).putBytes(data);
-            uploadTask.addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Toast.makeText(SetItemActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
-                }
-            })
-            .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    saveToItemCollection(childReference);
-                }
-            });
-        }
-    }
-
-    private void saveToItemCollection(String imageStorageReference) {
-        // Get a reference to the authenticated user
-        FirebaseUser currentUser = auth.getCurrentUser();
-
-        Log.i("SAVE_ITEM_USER_ID", currentUser.getUid());
-
-        // Setup the data
-        LatLng selectedMarkerLatLng = selectedMarker.getPosition();
-
-        Map<String, Object> data = new HashMap<>();
-        data.put("name", nameEditText.getText().toString());
-        data.put("description", descriptionEditText.getText().toString());
-        data.put("image", imageStorageReference);
-        data.put("found", false);
-        data.put("location", new GeoPoint(selectedMarkerLatLng.latitude, selectedMarkerLatLng.longitude));
-        data.put("user", db.collection("users").document(currentUser.getUid()));
-
-        // Save
-        db.collection("items").document(UUID.randomUUID().toString()).set(data)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            // Go back
-                            finish();
-                            return;
-                        }
-                        Toast.makeText(SetItemActivity.this, "Could not save item", Toast.LENGTH_SHORT).show();
-                    }
-                });
+        // Let the fragment take care of everything, pretty SOLID
+        // TODO: Add a progress dialog
+        uploadItemTaskFragment.uploadItem(bitmap, name, description, location);
     }
 
     @Override
@@ -247,5 +186,23 @@ public class SetItemActivity extends FragmentActivity implements OnMapReadyCallb
             intent.setType("image/*");
             startActivityForResult(Intent.createChooser(intent, "Select a picture"), 200);
         }
+    }
+
+    // The callback that we get from the upload item task fragment
+    @Override
+    public void onItemUploaded(final String error) {
+        // Run on the main thread, the method is call on an async task
+        SetItemActivity.this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // Handle any errors given on the task
+                if (error != null) {
+                    Toast.makeText(SetItemActivity.this, error, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                // Go back
+                finish();
+            }
+        });
     }
 }

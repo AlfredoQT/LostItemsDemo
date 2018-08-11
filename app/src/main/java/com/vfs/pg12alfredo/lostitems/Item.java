@@ -3,9 +3,8 @@ package com.vfs.pg12alfredo.lostitems;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.GeoPoint;
 
-public class Item {
+public class Item extends Model {
 
-    private String uid;
     private String name;
     private GeoPoint location;
     private boolean found;
@@ -13,22 +12,18 @@ public class Item {
     private DocumentReference user;
     private String image;
 
-    public Item(String uid, String name, GeoPoint location, boolean found, String description, DocumentReference user, String image) {
-        this.uid = uid;
+    // Required for firebase to serialize this
+    public Item() {
+
+    }
+
+    public Item(String name, GeoPoint location, boolean found, String description, DocumentReference user, String image) {
         this.name = name;
         this.location = location;
         this.found = found;
         this.description = description;
         this.user = user;
         this.image = image;
-    }
-
-    public String getUid() {
-        return uid;
-    }
-
-    public void setUid(String uid) {
-        this.uid = uid;
     }
 
     public String getName() {
@@ -67,8 +62,8 @@ public class Item {
         return user;
     }
 
-    public void setUser(DocumentReference owner) {
-        this.user = owner;
+    public void setUser(DocumentReference user) {
+        this.user = user;
     }
 
     public String getImage() {
@@ -77,5 +72,17 @@ public class Item {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    @Override
+    public String toString() {
+        return "Item{" +
+                "name='" + name + '\'' +
+                ", location=" + location +
+                ", found=" + found +
+                ", description='" + description + '\'' +
+                ", user=" + user +
+                ", image='" + image + '\'' +
+                '}';
     }
 }
