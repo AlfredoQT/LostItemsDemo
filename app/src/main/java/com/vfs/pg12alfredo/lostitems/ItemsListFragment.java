@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +17,10 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.UUID;
 
 
 /**
@@ -119,10 +123,19 @@ public class ItemsListFragment extends Fragment {
                 // Listen to changes of our items
                 FirestoreUtils.getItemsCollection()
                     .whereEqualTo("user", FirestoreUtils.getCurretUserReference())
-                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    .addSnapshotListener(new EventListener<QuerySnapshot>() { // There are no changes in the beginning of the app, but this gets called so it's awesome
                         @Override
                         public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-
+                            if (e != null) {
+                                Log.e("ITEMS_LIST_FRAGMENT", e.toString());
+                                return;
+                            }
+                            for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                                // Firestore is amazing... It just figures everything by itself
+                                Item item = document.toObject(Item.class);
+                                /*Log.i("ITEMS_LIST_FRAGMENT", item.toString());
+                                Log.i("ITEMS_LIST_FRAGMENT", "id: " + document.getId());*/
+                            }
                         }
                     });
                 break;
