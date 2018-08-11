@@ -75,7 +75,7 @@
                         android:padding="0dp"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Found"
+                        android:text="Not Found"
                         android:theme="@style/ItemRowButton" />
                 </LinearLayout>
             </LinearLayout>

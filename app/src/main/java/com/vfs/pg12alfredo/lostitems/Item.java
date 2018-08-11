@@ -3,7 +3,7 @@ package com.vfs.pg12alfredo.lostitems;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.GeoPoint;
 
-public class Item {
+public class Item extends Model {
 
     private String name;
     private GeoPoint location;

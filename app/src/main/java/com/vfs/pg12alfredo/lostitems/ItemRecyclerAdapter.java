@@ -16,11 +16,12 @@ import javax.annotation.Nullable;
 
 public class ItemRecyclerAdapter extends RecyclerView.Adapter<ItemHolder> {
 
-    // Going to store a list of item keys instead
     private ArrayList<Item> items;
+    private OnSetupViewHolder onSetupViewHolder;
 
-    public ItemRecyclerAdapter(ArrayList<Item> items) {
+    public ItemRecyclerAdapter(ArrayList<Item> items, OnSetupViewHolder onSetupViewHolder) {
         this.items = items;
+        this.onSetupViewHolder = onSetupViewHolder;
     }
 
     @NonNull
@@ -32,6 +33,8 @@ public class ItemRecyclerAdapter extends RecyclerView.Adapter<ItemHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull ItemHolder holder, int position) {
+        // Simply tell the guy with the recycler view to setup the holder
+        onSetupViewHolder.setupItem(holder, items.get(position));
 
     }
 
@@ -48,7 +51,7 @@ public class ItemRecyclerAdapter extends RecyclerView.Adapter<ItemHolder> {
     // Call this on binding
     // This interface thing is pretty cool, communication seems straightforward
     public interface OnSetupViewHolder {
-        void setupItem(Item item, ItemHolder viewHolder, int position);
+        void setupItem(ItemHolder viewHolder, Item item);
     }
 
 }

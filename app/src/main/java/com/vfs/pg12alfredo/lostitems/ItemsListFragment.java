@@ -124,6 +124,7 @@ public class ItemsListFragment extends Fragment {
                 FirestoreUtils.getItemsCollection()
                     .whereEqualTo("user", FirestoreUtils.getCurretUserReference())
                     .addSnapshotListener(new EventListener<QuerySnapshot>() { // There are no changes in the beginning of the app, but this gets called so it's awesome
+                        // This is super fast, I did some manual change in the database while running the app, and this got called instantly
                         @Override
                         public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
                             if (e != null) {
@@ -132,9 +133,9 @@ public class ItemsListFragment extends Fragment {
                             }
                             for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                                 // Firestore is amazing... It just figures everything by itself
-                                Item item = document.toObject(Item.class);
-                                /*Log.i("ITEMS_LIST_FRAGMENT", item.toString());
-                                Log.i("ITEMS_LIST_FRAGMENT", "id: " + document.getId());*/
+                                Item item = document.toObject(Item.class).withId(document.getId());
+                                Log.i("ITEMS_LIST_FRAGMENT", item.toString());
+                                Log.i("ITEMS_LIST_FRAGMENT", "id: " + item.id);
                             }
                         }
                     });
