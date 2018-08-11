@@ -32,10 +32,17 @@ public class ItemRecyclerAdapter extends RecyclerView.Adapter<ItemHolder> {
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ItemHolder holder, int position) {
-        // Simply tell the guy with the recycler view to setup the holder
-        onSetupViewHolder.setupItem(holder, items.get(position));
-
+    public void onBindViewHolder(@NonNull final ItemHolder holder, int position) {
+        // I will call the interface setup method only when this document changes
+        final Item item = items.get(position);
+        FirestoreUtils.getItemsCollection().document(item.id)
+            .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                @Override
+                public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                    // Now call the method from the interface, which will be executed on the fragment containing the recycler view
+                    onSetupViewHolder.setupItem(holder, item);
+                }
+            });
     }
 
     @Override

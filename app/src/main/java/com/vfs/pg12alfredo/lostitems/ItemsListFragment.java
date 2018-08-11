@@ -4,15 +4,19 @@ package com.vfs.pg12alfredo.lostitems;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -20,6 +24,8 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -40,6 +46,10 @@ public class ItemsListFragment extends Fragment {
     private FloatingActionButton floatingActionButton;
 
     private RecyclerView recyclerView;
+
+    // Have to put this guy right here, because a it needs to be final if it is set in another scope
+    // But finals cannot be initialized...
+    private ItemRecyclerAdapter itemRecyclerAdapter;
 
     // Defines the actions of an item, to communicate back to the activity
     public interface OnItemActionsListener {
@@ -118,25 +128,45 @@ public class ItemsListFragment extends Fragment {
         // We are going to listen to some changes in the database depending on the type passed when creating the fragment
         int type = getArguments().getInt(TYPE_KEY);
 
+        // Setup the recycler view layout
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
+        recyclerView.setLayoutManager(linearLayoutManager);
+
         switch (type) {
             case TYPE_OWN:
-                // Listen to changes of our items
+                // I will just listen to one change for performance reasons
+                // This is because I have to go and fetch the user using the item reference
+                // I store a reference because if the user changes name, it will be propagated to all items
                 FirestoreUtils.getItemsCollection()
                     .whereEqualTo("user", FirestoreUtils.getCurretUserReference())
-                    .addSnapshotListener(new EventListener<QuerySnapshot>() { // There are no changes in the beginning of the app, but this gets called so it's awesome
-                        // This is super fast, I did some manual change in the database while running the app, and this got called instantly
+                    .get()
+                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                         @Override
-                        public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                            if (e != null) {
-                                Log.e("ITEMS_LIST_FRAGMENT", e.toString());
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            if (!task.isSuccessful()) {
+                                Log.d("ITEMS_LIST_FRAGMENT", "Error getting items");
                                 return;
                             }
-                            for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                                // Firestore is amazing... It just figures everything by itself
+                            // To hold the items
+                            ArrayList<Item> items = new ArrayList<>();
+                            // Go through every result
+                            for (QueryDocumentSnapshot document : task.getResult()) {
                                 Item item = document.toObject(Item.class).withId(document.getId());
-                                Log.i("ITEMS_LIST_FRAGMENT", item.toString());
-                                Log.i("ITEMS_LIST_FRAGMENT", "id: " + item.id);
+                                Log.i("ITEMS_LIST_FRAGMENT", "Fetched: " + item.toString());
+                                items.add(item);
                             }
+
+                            itemRecyclerAdapter = new ItemRecyclerAdapter(items, new ItemRecyclerAdapter.OnSetupViewHolder() {
+                                // The setupItem method gets called for only one document, when it changes
+                                // We will no longer listen to the whole collection change
+                                // The first time will be call for every document, and that's great!
+                                @Override
+                                public void setupItem(ItemHolder viewHolder, Item item) {
+                                    setupItemHolder(viewHolder, item);
+                                }
+                            });
+                            // Set the adapter to the recycler view
+                            recyclerView.setAdapter(itemRecyclerAdapter);
                         }
                     });
                 break;
@@ -145,5 +175,12 @@ public class ItemsListFragment extends Fragment {
             default:
                 throw new RuntimeException("A type for ItemsListFragment must be specified");
         }
+
     }
+
+    public void setupItemHolder(ItemHolder itemHolder, Item item){
+        Log.i("ITEMS_LIST_FRAGMENT", "Item id: " + item.id);
+        Log.i("ITEMS_LIST_FRAGMENT", item.toString());
+    }
+
 }
