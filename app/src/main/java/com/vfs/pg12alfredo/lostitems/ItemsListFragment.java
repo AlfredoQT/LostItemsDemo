@@ -16,8 +16,11 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -25,7 +28,9 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 
@@ -58,6 +63,9 @@ public class ItemsListFragment extends Fragment {
 
     // To communicate the actions back to the activity
     private OnItemActionsListener onItemActionsListener;
+
+    // Some hack to not have to fetch the for each item every time
+    private Map<DocumentReference, User> usersInItems = new HashMap<>();
 
     public ItemsListFragment() {
         // Required empty public constructor
@@ -139,23 +147,22 @@ public class ItemsListFragment extends Fragment {
                 // I store a reference because if the user changes name, it will be propagated to all items
                 FirestoreUtils.getItemsCollection()
                     .whereEqualTo("user", FirestoreUtils.getCurretUserReference())
-                    .get()
-                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
                         @Override
-                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                            if (!task.isSuccessful()) {
-                                Log.d("ITEMS_LIST_FRAGMENT", "Error getting items");
-                                return;
-                            }
+                        public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
                             // To hold the items
-                            ArrayList<String> itemIds = new ArrayList<>();
+                            ArrayList<Item> items = new ArrayList<>();
                             // Go through every result
-                            for (QueryDocumentSnapshot document : task.getResult()) {
+                            for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                                 // Log.i("ITEMS_LIST_FRAGMENT", "Fetched: " + item.toString());
-                                itemIds.add(document.getId());
+                                Item item = document.toObject(Item.class).withId(document.getId());
+                                items.add(item);
                             }
 
-                            itemRecyclerAdapter = new ItemRecyclerAdapter(itemIds, new ItemRecyclerAdapter.OnSetupViewHolder() {
+                            // Cleanup the map
+                            usersInItems.clear();
+
+                            itemRecyclerAdapter = new ItemRecyclerAdapter(items, new ItemRecyclerAdapter.OnSetupViewHolder() {
                                 // The setupItem method gets called for only one document, when it changes
                                 // We will no longer listen to the whole collection change
                                 // The first time will be call for every document, and that's great!
@@ -174,12 +181,33 @@ public class ItemsListFragment extends Fragment {
             default:
                 throw new RuntimeException("A type for ItemsListFragment must be specified");
         }
-
     }
 
-    public void setupItemHolder(ItemHolder itemHolder, Item item){
-        Log.i("ITEMS_LIST_FRAGMENT", "Item id: " + item.id);
-        Log.i("ITEMS_LIST_FRAGMENT", item.toString());
+    public void setupItemHolder(ItemHolder itemHolder, final Item item){
+        // I just make a little awesome optimization with this!!!
+        // So it basically says that if the user has been fetched, don't go fetch him anymore
+        if (!usersInItems.containsKey(item.getUser())) {
+            // Log.i("HELLO", String.valueOf(++count));
+            item.getUser()
+                .get()
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("ITEMS_LIST_FRAGMENT", "ERROR FETCHING USER " + e.toString());
+                    }
+                })
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        User user = documentSnapshot.toObject(User.class);
+
+                        // Performance bit
+                        usersInItems.put(item.getUser(), user);
+                    }
+                });
+        } else {
+
+        }
     }
 
 }

@@ -34,6 +34,13 @@ public class ItemHolder extends RecyclerView.ViewHolder {
 
         foundButton = itemView.findViewById(R.id.row_item_found_button);
         updateButton = itemView.findViewById(R.id.row_item_update_button);
+    }
+
+    public void setUserName(String name) {
+        userNameTextView.setText(name);
+    }
+
+    public void setItemImage(String url) {
 
     }
 }
