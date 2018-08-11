@@ -1,11 +1,12 @@
 package com.vfs.pg12alfredo.lostitems;
 
+import android.content.Intent;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ItemsListFragment.OnItemActionsListener {
 
     private ViewPager viewPager;
     private TabLayout tabLayout;
@@ -15,8 +16,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        MainFragmentPagerAdapter mainFragmentPagerAdapter = new MainFragmentPagerAdapter(getSupportFragmentManager());
+        // Add the fragments to the adapter
+        mainFragmentPagerAdapter.addFragment(ItemsListFragment.newInstance(ItemsListFragment.TYPE_OWN));
+        mainFragmentPagerAdapter.addFragment(new ItemsMapFragment());
+        mainFragmentPagerAdapter.addFragment(new SettingsFragment());
+
         viewPager = findViewById(R.id.main_view_pager);
-        viewPager.setAdapter(new MainFragmentPagerAdapter(getSupportFragmentManager()));
+        viewPager.setAdapter(mainFragmentPagerAdapter);
 
         tabLayout = findViewById(R.id.main_tab_layout);
         tabLayout.setupWithViewPager(viewPager);
@@ -36,5 +43,12 @@ public class MainActivity extends AppCompatActivity {
         if (tabThree != null) {
             tabThree.setIcon(R.drawable.ic_settings);
         }
+    }
+
+    @Override
+    public void onAddItemRequest() {
+        // Go to the add item activity
+        Intent intent = new Intent(MainActivity.this, SetItemActivity.class);
+        startActivity(intent);
     }
 }

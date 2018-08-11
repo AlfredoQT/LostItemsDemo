@@ -30,25 +30,4 @@ public class ItemHolder extends RecyclerView.ViewHolder {
         foundButton = itemView.findViewById(R.id.row_item_found_button);
 
     }
-
-    public void bind(final Item item, final ItemRowActionsInterface itemRowActionsInterface) {
-        nameTextView.setText(item.getName());
-        descTextView.setText(item.getDescription());
-        latTextView.setText(String.format("Lat: %.2f", item.getLocation().getLatitude()));
-        lngTextView.setText(String.format("Lng: %.2f", item.getLocation().getLongitude()));
-
-        updateButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                itemRowActionsInterface.updateItem(item);
-            }
-        });
-
-        foundButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                itemRowActionsInterface.foundItem(item);
-            }
-        });
-    }
 }
