@@ -16,11 +16,16 @@ import javax.annotation.Nullable;
 
 public class ItemRecyclerAdapter extends RecyclerView.Adapter<ItemHolder> {
 
-    private ArrayList<Item> items;
+    // I used to store the items themselves
+    // But whenever I did a manual update on one, I would still pass the old reference
+    // So I just decide to store the ids
+    // I could pass to the interface method a new item, but then this array of items would be outdated
+    // So just ids again
+    private ArrayList<String> itemIds;
     private OnSetupViewHolder onSetupViewHolder;
 
-    public ItemRecyclerAdapter(ArrayList<Item> items, OnSetupViewHolder onSetupViewHolder) {
-        this.items = items;
+    public ItemRecyclerAdapter(ArrayList<String> itemIds, OnSetupViewHolder onSetupViewHolder) {
+        this.itemIds = itemIds;
         this.onSetupViewHolder = onSetupViewHolder;
     }
 
@@ -33,13 +38,12 @@ public class ItemRecyclerAdapter extends RecyclerView.Adapter<ItemHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull final ItemHolder holder, int position) {
-        // I will call the interface setup method only when this document changes
-        final Item item = items.get(position);
-        FirestoreUtils.getItemsCollection().document(item.id)
+        FirestoreUtils.getItemsCollection().document(itemIds.get(position))
             .addSnapshotListener(new EventListener<DocumentSnapshot>() {
                 @Override
                 public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
                     // Now call the method from the interface, which will be executed on the fragment containing the recycler view
+                    Item item = documentSnapshot.toObject(Item.class).withId(documentSnapshot.getId());
                     onSetupViewHolder.setupItem(holder, item);
                 }
             });
@@ -47,7 +51,7 @@ public class ItemRecyclerAdapter extends RecyclerView.Adapter<ItemHolder> {
 
     @Override
     public int getItemCount() {
-        return items.size();
+        return itemIds.size();
     }
 
     // I took this idea from FriendlyPix app https://github.com/firebase/friendlypix/blob/d911f6b6cf33efd63fb09dcd53207995cd437841/android/app/src/main/java/com/google/firebase/samples/apps/friendlypix/FirebasePostQueryAdapter.java

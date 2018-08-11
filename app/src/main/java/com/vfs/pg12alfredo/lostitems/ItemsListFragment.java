@@ -148,15 +148,14 @@ public class ItemsListFragment extends Fragment {
                                 return;
                             }
                             // To hold the items
-                            ArrayList<Item> items = new ArrayList<>();
+                            ArrayList<String> itemIds = new ArrayList<>();
                             // Go through every result
                             for (QueryDocumentSnapshot document : task.getResult()) {
-                                Item item = document.toObject(Item.class).withId(document.getId());
-                                Log.i("ITEMS_LIST_FRAGMENT", "Fetched: " + item.toString());
-                                items.add(item);
+                                // Log.i("ITEMS_LIST_FRAGMENT", "Fetched: " + item.toString());
+                                itemIds.add(document.getId());
                             }
 
-                            itemRecyclerAdapter = new ItemRecyclerAdapter(items, new ItemRecyclerAdapter.OnSetupViewHolder() {
+                            itemRecyclerAdapter = new ItemRecyclerAdapter(itemIds, new ItemRecyclerAdapter.OnSetupViewHolder() {
                                 // The setupItem method gets called for only one document, when it changes
                                 // We will no longer listen to the whole collection change
                                 // The first time will be call for every document, and that's great!
