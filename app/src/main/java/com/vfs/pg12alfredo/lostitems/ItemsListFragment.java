@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -49,7 +50,7 @@ public class ItemsListFragment extends Fragment {
     private static final String TYPE_KEY = "TYPE";
 
     private FloatingActionButton floatingActionButton;
-
+    private SwipeRefreshLayout swipeRefreshLayout;
     private RecyclerView recyclerView;
 
     // Have to put this guy right here, because a it needs to be final if it is set in another scope
@@ -113,9 +114,9 @@ public class ItemsListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        final View view = inflater.inflate(R.layout.fragment_items_list, container, false);
+        View view = inflater.inflate(R.layout.fragment_items_list, container, false);
         floatingActionButton = view.findViewById(R.id.items_list_fab);
-
+        swipeRefreshLayout = view.findViewById(R.id.items_list_swipe_refresh_layout);
         recyclerView = view.findViewById(R.id.items_list_recycler_view);
 
         return view;
@@ -138,6 +139,51 @@ public class ItemsListFragment extends Fragment {
         // Set the layout manager for the recycler view
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(linearLayoutManager);
+
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                int type = getArguments().getInt(TYPE_KEY);
+                switch (type) {
+                    case TYPE_OWN: // Get the current user items
+                        FirestoreUtils.getItemsCollection()
+                                .whereEqualTo("user", FirestoreUtils.getCurretUserReference())
+                                .get()
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Log.i("ITEMS_LIST_FRAGMENT", e.toString());
+                                    }
+                                })
+                                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                    @Override
+                                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                        // The items list to store
+                                        List<String> items = new ArrayList<>();
+                                        // Go to every one of them
+                                        for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                                            items.add(document.getId());
+                                        }
+
+                                        // Create the adapter and set it to the recycler view
+                                        ItemRecyclerAdapter itemRecyclerAdapter = new ItemRecyclerAdapter(items, new ItemRecyclerAdapter.OnSetupViewHolder() {
+                                            @Override
+                                            public void setupItem(ItemHolder viewHolder, Item item) {
+                                                setupItemHolder(viewHolder, item);
+                                            }
+                                        });
+                                        recyclerView.setAdapter(itemRecyclerAdapter);
+                                        swipeRefreshLayout.setRefreshing(false);
+                                    }
+                                });
+                        break;
+                    case TYPE_ALL:
+                        break;
+                    default:
+                        throw new RuntimeException("A type for ItemsListFragment must be specified");
+                }
+            }
+        });
     }
 
     @Override
