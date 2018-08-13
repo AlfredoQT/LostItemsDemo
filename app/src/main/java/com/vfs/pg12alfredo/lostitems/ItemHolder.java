@@ -61,4 +61,11 @@ public class ItemHolder extends RecyclerView.ViewHolder {
     public void setItemDescription(String description) {
         descTextView.setText(description);
     }
+
+    public void shouldItemUpdate(boolean update) {
+        // Hide the update button
+        if (!update) {
+            updateButton.setVisibility(View.INVISIBLE);
+        }
+    }
 }

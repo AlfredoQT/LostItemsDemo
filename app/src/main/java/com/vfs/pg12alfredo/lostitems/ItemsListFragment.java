@@ -183,6 +183,12 @@ public class ItemsListFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.i("rees", "asdda");
+    }
+
     public void setupItemHolder(final ItemHolder itemHolder, final Item item){
         // I just make a little awesome optimization with this!!!
         // So it basically says that if the user has been fetched, don't go fetch him anymore
@@ -199,7 +205,7 @@ public class ItemsListFragment extends Fragment {
                 .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                     @Override
                     public void onSuccess(DocumentSnapshot documentSnapshot) {
-                        User user = documentSnapshot.toObject(User.class);
+                        User user = documentSnapshot.toObject(User.class).withId(documentSnapshot.getId());
 
                         setItemHolderView(itemHolder, item, user);
 
@@ -219,6 +225,9 @@ public class ItemsListFragment extends Fragment {
         itemHolder.setItemName(item.getName());
         itemHolder.setItemLocation(item.getLocation());
         itemHolder.setItemDescription(item.getDescription());
+
+        // Only make the update button available for the current user posts
+        itemHolder.shouldItemUpdate(user.id.compareTo(FirestoreUtils.getCurrentUserId()) == 0);
     }
 
 }

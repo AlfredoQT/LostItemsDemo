@@ -1,6 +1,6 @@
 package com.vfs.pg12alfredo.lostitems;
 
-public class User {
+public class User extends Model {
 
     private String name;
 
