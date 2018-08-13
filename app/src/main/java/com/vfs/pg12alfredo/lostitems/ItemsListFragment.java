@@ -116,6 +116,17 @@ public class ItemsListFragment extends Fragment {
         final View view = inflater.inflate(R.layout.fragment_items_list, container, false);
         floatingActionButton = view.findViewById(R.id.items_list_fab);
 
+        recyclerView = view.findViewById(R.id.items_list_recycler_view);
+
+        return view;
+    }
+
+    // This is called after the activity holding the fragment is created
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        // I will interact with the UI elements here since the activity is created right here
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -124,55 +135,44 @@ public class ItemsListFragment extends Fragment {
             }
         });
 
-        recyclerView = view.findViewById(R.id.items_list_recycler_view);
-
-        return view;
+        // Set the layout manager for the recycler view
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
+        recyclerView.setLayoutManager(linearLayoutManager);
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        // We are going to listen to some changes in the database depending on the type passed when creating the fragment
+    public void onResume() {
+        super.onResume();
+        // We are going to fetch items from the database depending on the type passed when creating the fragment
         int type = getArguments().getInt(TYPE_KEY);
-
-        // Setup the recycler view layout
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
-        recyclerView.setLayoutManager(linearLayoutManager);
-
         switch (type) {
-            case TYPE_OWN:
-                // I will just listen to one change for performance reasons
-                // This is because I have to go and fetch the user using the item reference
-                // I store a reference because if the user changes name, it will be propagated to all items
+            case TYPE_OWN: // Get the current user items
                 FirestoreUtils.getItemsCollection()
                     .whereEqualTo("user", FirestoreUtils.getCurretUserReference())
-                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    .get()
+                    .addOnFailureListener(new OnFailureListener() {
                         @Override
-                        public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                            // To hold the items
-                            ArrayList<Item> items = new ArrayList<>();
-                            // Go through every result
+                        public void onFailure(@NonNull Exception e) {
+                            Log.i("ITEMS_LIST_FRAGMENT", e.toString());
+                        }
+                    })
+                    .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                        @Override
+                        public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                            // The items list to store
+                            List<String> items = new ArrayList<>();
+                            // Go to every one of them
                             for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                                // Log.i("ITEMS_LIST_FRAGMENT", "Fetched: " + item.toString());
-                                Item item = document.toObject(Item.class).withId(document.getId());
-                                items.add(item);
+                                items.add(document.getId());
                             }
 
-                            // Cleanup the map
-                            usersInItems.clear();
-
-                            itemRecyclerAdapter = new ItemRecyclerAdapter(items, new ItemRecyclerAdapter.OnSetupViewHolder() {
-                                // The setupItem method gets called for only one document, when it changes
-                                // We will no longer listen to the whole collection change
-                                // The first time will be call for every document, and that's great!
+                            // Create the adapter and set it to the recycler view
+                            ItemRecyclerAdapter itemRecyclerAdapter = new ItemRecyclerAdapter(items, new ItemRecyclerAdapter.OnSetupViewHolder() {
                                 @Override
                                 public void setupItem(ItemHolder viewHolder, Item item) {
-                                    setupItemHolder(viewHolder, item);
+                                    
                                 }
                             });
-                            // Set the adapter to the recycler view
-                            recyclerView.setAdapter(itemRecyclerAdapter);
                         }
                     });
                 break;
@@ -181,12 +181,6 @@ public class ItemsListFragment extends Fragment {
             default:
                 throw new RuntimeException("A type for ItemsListFragment must be specified");
         }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        Log.i("rees", "asdda");
     }
 
     public void setupItemHolder(final ItemHolder itemHolder, final Item item){
