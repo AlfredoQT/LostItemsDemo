@@ -19,6 +19,7 @@ public class MainActivity extends AppCompatActivity implements ItemsListFragment
         MainFragmentPagerAdapter mainFragmentPagerAdapter = new MainFragmentPagerAdapter(getSupportFragmentManager());
         // Add the fragments to the adapter
         mainFragmentPagerAdapter.addFragment(ItemsListFragment.newInstance(ItemsListFragment.TYPE_OWN));
+        mainFragmentPagerAdapter.addFragment(ItemsListFragment.newInstance(ItemsListFragment.TYPE_ALL));
         mainFragmentPagerAdapter.addFragment(new ItemsMapFragment());
         mainFragmentPagerAdapter.addFragment(new SettingsFragment());
 
@@ -37,11 +38,15 @@ public class MainActivity extends AppCompatActivity implements ItemsListFragment
         }
         TabLayout.Tab tabTwo = tabLayout.getTabAt(1);
         if (tabTwo != null) {
-            tabTwo.setIcon(R.drawable.ic_map_items);
+            tabTwo.setIcon(R.drawable.ic_list_item);
         }
         TabLayout.Tab tabThree = tabLayout.getTabAt(2);
         if (tabThree != null) {
-            tabThree.setIcon(R.drawable.ic_settings);
+            tabThree.setIcon(R.drawable.ic_map_items);
+        }
+        TabLayout.Tab tabFour = tabLayout.getTabAt(3);
+        if (tabFour != null) {
+            tabFour.setIcon(R.drawable.ic_settings);
         }
     }
 

@@ -66,7 +66,7 @@ public class ItemsListFragment extends Fragment {
     private OnItemActionsListener onItemActionsListener;
 
     // Some hack to not have to fetch the for each item every time
-    private Map<DocumentReference, User> usersInItems = new HashMap<>();
+    private Map<String, User> usersInItems = new HashMap<>();
 
     public ItemsListFragment() {
         // Required empty public constructor
@@ -140,6 +140,7 @@ public class ItemsListFragment extends Fragment {
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(linearLayoutManager);
 
+        // TODO: Refactor this
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -178,6 +179,35 @@ public class ItemsListFragment extends Fragment {
                                 });
                         break;
                     case TYPE_ALL:
+                        FirestoreUtils.getItemsCollection()
+                                .get()
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Log.i("ITEMS_LIST_FRAGMENT", e.toString());
+                                    }
+                                })
+                                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                    @Override
+                                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                        // The items list to store
+                                        List<String> items = new ArrayList<>();
+                                        // Go to every one of them
+                                        for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                                            items.add(document.getId());
+                                        }
+
+                                        // Create the adapter and set it to the recycler view
+                                        ItemRecyclerAdapter itemRecyclerAdapter = new ItemRecyclerAdapter(items, new ItemRecyclerAdapter.OnSetupViewHolder() {
+                                            @Override
+                                            public void setupItem(ItemHolder viewHolder, Item item) {
+                                                setupItemHolder(viewHolder, item);
+                                            }
+                                        });
+                                        recyclerView.setAdapter(itemRecyclerAdapter);
+                                        swipeRefreshLayout.setRefreshing(false);
+                                    }
+                                });
                         break;
                     default:
                         throw new RuntimeException("A type for ItemsListFragment must be specified");
@@ -191,6 +221,8 @@ public class ItemsListFragment extends Fragment {
         super.onResume();
         // We are going to fetch items from the database depending on the type passed when creating the fragment
         int type = getArguments().getInt(TYPE_KEY);
+
+        // TODO: Refactor this
         switch (type) {
             case TYPE_OWN: // Get the current user items
                 FirestoreUtils.getItemsCollection()
@@ -224,6 +256,34 @@ public class ItemsListFragment extends Fragment {
                     });
                 break;
             case TYPE_ALL:
+                FirestoreUtils.getItemsCollection()
+                        .get()
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.i("ITEMS_LIST_FRAGMENT", e.toString());
+                            }
+                        })
+                        .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                            @Override
+                            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                // The items list to store
+                                List<String> items = new ArrayList<>();
+                                // Go to every one of them
+                                for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                                    items.add(document.getId());
+                                }
+
+                                // Create the adapter and set it to the recycler view
+                                ItemRecyclerAdapter itemRecyclerAdapter = new ItemRecyclerAdapter(items, new ItemRecyclerAdapter.OnSetupViewHolder() {
+                                    @Override
+                                    public void setupItem(ItemHolder viewHolder, Item item) {
+                                        setupItemHolder(viewHolder, item);
+                                    }
+                                });
+                                recyclerView.setAdapter(itemRecyclerAdapter);
+                            }
+                        });
                 break;
             default:
                 throw new RuntimeException("A type for ItemsListFragment must be specified");
@@ -233,7 +293,7 @@ public class ItemsListFragment extends Fragment {
     public void setupItemHolder(final ItemHolder itemHolder, final Item item){
         // I just make a little awesome optimization with this!!!
         // So it basically says that if the user has been fetched, don't go fetch him anymore
-        if (!usersInItems.containsKey(item.getUser())) {
+        if (!usersInItems.containsKey(item.getUser().getId())) {
             // Log.i("HELLO", String.valueOf(++count));
             item.getUser()
                 .get()
@@ -247,15 +307,13 @@ public class ItemsListFragment extends Fragment {
                     @Override
                     public void onSuccess(DocumentSnapshot documentSnapshot) {
                         User user = documentSnapshot.toObject(User.class).withId(documentSnapshot.getId());
-
                         setItemHolderView(itemHolder, item, user);
-
                         // Performance bit
-                        usersInItems.put(item.getUser(), user);
+                        usersInItems.put(item.getUser().getId(), user);
                     }
                 });
         } else {
-            setItemHolderView(itemHolder, item, usersInItems.get(item.getUser()));
+            setItemHolderView(itemHolder, item, usersInItems.get(item.getUser().getId()));
         }
     }
 
@@ -266,7 +324,6 @@ public class ItemsListFragment extends Fragment {
         itemHolder.setItemName(item.getName());
         itemHolder.setItemLocation(item.getLocation());
         itemHolder.setItemDescription(item.getDescription());
-
         // Only make the update button available for the current user posts
         itemHolder.shouldItemUpdate(user.id.compareTo(FirestoreUtils.getCurrentUserId()) == 0);
     }

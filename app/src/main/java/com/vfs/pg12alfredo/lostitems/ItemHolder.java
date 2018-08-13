@@ -66,6 +66,8 @@ public class ItemHolder extends RecyclerView.ViewHolder {
         // Hide the update button
         if (!update) {
             updateButton.setVisibility(View.INVISIBLE);
+            return;
         }
+        updateButton.setVisibility(View.VISIBLE);
     }
 }
