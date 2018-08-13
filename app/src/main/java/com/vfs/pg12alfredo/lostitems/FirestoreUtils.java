@@ -5,6 +5,8 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 // A bunch of static methods just to make my life easier
 // Idea from example FriendlyPix: https://github.com/firebase/friendlypix/tree/d911f6b6cf33efd63fb09dcd53207995cd437841/android/app/src/main/java/com/google/firebase/samples/apps/friendlypix
@@ -39,6 +41,10 @@ public class FirestoreUtils {
 
     public static FirebaseUser getCurrentUser() {
         return FirebaseAuth.getInstance().getCurrentUser();
+    }
+
+    public static StorageReference getStorageReference() {
+        return FirebaseStorage.getInstance().getReference();
     }
 
 }

@@ -6,6 +6,9 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.storage.StorageReference;
+
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ItemHolder extends RecyclerView.ViewHolder {
@@ -40,7 +43,22 @@ public class ItemHolder extends RecyclerView.ViewHolder {
         userNameTextView.setText(name);
     }
 
-    public void setItemImage(String url) {
+    public void setItemName(String name) {
+        nameTextView.setText(name);
+    }
 
+    public void setItemImage(StorageReference storageReference) {
+        // Load it into the image view of item, i.e. a wallet
+        GlideUtils.loadImage(storageReference, imageView);
+    }
+
+    public void setItemLocation(GeoPoint location) {
+        // With some nice format
+        latTextView.setText(String.format("Lat: %.2f", location.getLatitude()));
+        lngTextView.setText(String.format("Lng: %.2f", location.getLongitude()));
+    }
+
+    public void setItemDescription(String description) {
+        descTextView.setText(description);
     }
 }

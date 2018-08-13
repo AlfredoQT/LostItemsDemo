@@ -106,7 +106,7 @@ public class UploadItemTaskFragment extends Fragment {
         @Override
         protected Void doInBackground(Void... voids) {
             // Get the references to the storage
-            final StorageReference storageReference = FirebaseStorage.getInstance().getReference();
+            final StorageReference storageReference = FirestoreUtils.getStorageReference();
 
             // First step, store the image
             // Construct a byte array and upload it to the cloud storage
@@ -135,10 +135,10 @@ public class UploadItemTaskFragment extends Fragment {
                     Map<String, Object> data = new HashMap<>();
                     data.put("name", itemName);
                     data.put("description", itemDescription);
-                    data.put("image", storageReference.child(imageReference));
+                    data.put("image", imageReference);
                     data.put("found", false);
                     data.put("location", itemLocation);
-                    data.put("user", imageReference);
+                    data.put("user", FirestoreUtils.getCurretUserReference());
 
                     // Save
                     FirestoreUtils.getItemsCollection().document(UUID.randomUUID().toString())

@@ -183,7 +183,7 @@ public class ItemsListFragment extends Fragment {
         }
     }
 
-    public void setupItemHolder(ItemHolder itemHolder, final Item item){
+    public void setupItemHolder(final ItemHolder itemHolder, final Item item){
         // I just make a little awesome optimization with this!!!
         // So it basically says that if the user has been fetched, don't go fetch him anymore
         if (!usersInItems.containsKey(item.getUser())) {
@@ -201,13 +201,24 @@ public class ItemsListFragment extends Fragment {
                     public void onSuccess(DocumentSnapshot documentSnapshot) {
                         User user = documentSnapshot.toObject(User.class);
 
+                        setItemHolderView(itemHolder, item, user);
+
                         // Performance bit
                         usersInItems.put(item.getUser(), user);
                     }
                 });
         } else {
-
+            setItemHolderView(itemHolder, item, usersInItems.get(item.getUser()));
         }
+    }
+
+    private void setItemHolderView(ItemHolder itemHolder, Item item, User user) {
+        // Create the views!!
+        itemHolder.setItemImage(FirestoreUtils.getStorageReference().child(item.getImage()));
+        itemHolder.setUserName(user.getName());
+        itemHolder.setItemName(item.getName());
+        itemHolder.setItemLocation(item.getLocation());
+        itemHolder.setItemDescription(item.getDescription());
     }
 
 }
