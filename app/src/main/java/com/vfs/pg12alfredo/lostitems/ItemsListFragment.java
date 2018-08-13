@@ -170,9 +170,10 @@ public class ItemsListFragment extends Fragment {
                             ItemRecyclerAdapter itemRecyclerAdapter = new ItemRecyclerAdapter(items, new ItemRecyclerAdapter.OnSetupViewHolder() {
                                 @Override
                                 public void setupItem(ItemHolder viewHolder, Item item) {
-                                    
+                                    setupItemHolder(viewHolder, item);
                                 }
                             });
+                            recyclerView.setAdapter(itemRecyclerAdapter);
                         }
                     });
                 break;
