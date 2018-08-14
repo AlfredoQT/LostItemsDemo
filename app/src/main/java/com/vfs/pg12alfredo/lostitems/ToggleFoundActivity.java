@@ -27,6 +27,7 @@ import javax.annotation.Nullable;
 public class ToggleFoundActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener, FindItemTaskFragment.FindItemTaskCallbacks {
 
     private String itemId;
+    private LatLng intentItemLocation;
     private GoogleMap map;
     private Marker selectedMarker;
     private TextView stateTextView;
@@ -43,6 +44,8 @@ public class ToggleFoundActivity extends AppCompatActivity implements OnMapReady
 
         // Get the data from the intent
         itemId = getIntent().getStringExtra("ITEM");
+        // See if we get some of this
+        intentItemLocation =  (LatLng) getIntent().getParcelableExtra("ITEM_NEW_LOCATION");
 
         stateTextView = findViewById(R.id.toggle_found_state_text_view);
         updateButton = findViewById(R.id.toggle_found_update_button);
@@ -74,9 +77,13 @@ public class ToggleFoundActivity extends AppCompatActivity implements OnMapReady
                     final GeoPoint location = (GeoPoint) data.get("location");
 
                     // Update the marker
-                    LatLng markerLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                    LatLng markerLocation = intentItemLocation != null ? intentItemLocation : new LatLng(location.getLatitude(), location.getLongitude());
                     selectedMarker.setPosition(markerLocation);
                     map.moveCamera(CameraUpdateFactory.newLatLng(markerLocation));
+
+                    // Set it back to null to allow the live updates
+                    intentItemLocation = null;
+
                     map.animateCamera(CameraUpdateFactory.zoomTo(14.0f));
 
                     stateTextView.setText(found ? "Where did you lose me?" : "Where did you find me?");

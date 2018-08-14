@@ -49,6 +49,9 @@ public class SetItemActivity extends FragmentActivity implements OnMapReadyCallb
 
     private static final String UPLOAD_ITEM_TASK_FRAGMENT_TAG = "UPLOAD_ITEM_TASK_FRAGMENT";
 
+    // We might get one in an intent
+    private LatLng coordsByIntent;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,6 +86,13 @@ public class SetItemActivity extends FragmentActivity implements OnMapReadyCallb
                 sendIntentForPhotoPicker();
             }
         });
+
+        Intent intent = getIntent();
+
+        if (intent != null) {
+            // Set the data from the intent
+            coordsByIntent = (LatLng) intent.getParcelableExtra("COORDS");
+        }
     }
 
     @Override
@@ -90,9 +100,10 @@ public class SetItemActivity extends FragmentActivity implements OnMapReadyCallb
         map = googleMap;
 
         // Add default marker
-        LatLng sydney = new LatLng(-34, 151);
-        selectedMarker = map.addMarker(new MarkerOptions().position(sydney));
-        map.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        // Set the one on the intent if it exists
+        LatLng defaultCoords = coordsByIntent != null ? coordsByIntent : new LatLng(-34, 151);
+        selectedMarker = map.addMarker(new MarkerOptions().position(defaultCoords));
+        map.moveCamera(CameraUpdateFactory.newLatLng(defaultCoords));
         map.animateCamera(CameraUpdateFactory.zoomTo(14.0f));
 
         map.setOnMapClickListener(this);
