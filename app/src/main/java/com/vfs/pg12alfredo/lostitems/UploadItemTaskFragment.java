@@ -52,7 +52,7 @@ public class UploadItemTaskFragment extends Fragment {
         // Then the fragment would run again the async task without knowing that one is already running, which results in wasting resources
         // That's why I retain the instance when config changes
         // I read about it here: https://www.androiddesignpatterns.com/2013/04/retaining-objects-across-config-changes.html
-        setRetainInstance(true);
+        setRetainInstance(true);setRetainInstance(true);
     }
 
     @Override

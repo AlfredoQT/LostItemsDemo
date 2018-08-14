@@ -1,5 +1,6 @@
 package com.vfs.pg12alfredo.lostitems;
 
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
@@ -69,5 +70,22 @@ public class ItemHolder extends RecyclerView.ViewHolder {
             return;
         }
         updateButton.setVisibility(View.VISIBLE);
+    }
+
+    public void setFoundButton(final Item item) {
+        foundButton.setText(item.isFound() ? "Lost me?" : "Found me?");
+        foundButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startToggleFoundActivity(item.id);
+            }
+        });
+    }
+
+    // I don't know if this is kind of hacky, but I'm just starting activities
+    public void startToggleFoundActivity(String itemId) {
+        Intent intent = new Intent(itemView.getContext(), ToggleFoundActivity.class);
+        intent.putExtra("ITEM", itemId);
+        itemView.getContext().startActivity(intent);
     }
 }

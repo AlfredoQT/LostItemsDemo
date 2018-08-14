@@ -324,6 +324,7 @@ public class ItemsListFragment extends Fragment {
         itemHolder.setItemName(item.getName());
         itemHolder.setItemLocation(item.getLocation());
         itemHolder.setItemDescription(item.getDescription());
+        itemHolder.setFoundButton(item);
         // Only make the update button available for the current user posts
         itemHolder.shouldItemUpdate(user.id.compareTo(FirestoreUtils.getCurrentUserId()) == 0);
     }
