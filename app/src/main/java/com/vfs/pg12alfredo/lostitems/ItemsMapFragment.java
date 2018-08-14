@@ -12,6 +12,8 @@ import android.view.ViewGroup;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -56,8 +58,25 @@ public class ItemsMapFragment extends Fragment implements OnMapReadyCallback, Go
                 for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                     Item item = document.toObject(Item.class).withId(document.getId());
                     LatLng position = new LatLng(item.getLocation().getLatitude(), item.getLocation().getLongitude());
+
+                    // Set the color based on state
+                    BitmapDescriptor markerBitmapDescriptor = item.isFound() ?
+                            BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
+                            :
+                            BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE);
+
+                    // Sorry for the slow comparison
+                    float alpha = FirestoreUtils.getCurretUserReference().getId().compareTo(item.getUser().getId()) == 0 ?
+                            1.0f
+                            :
+                            0.5f;
+
                     // Add some nice markers
-                    Marker marker = map.addMarker(new MarkerOptions().position(position).draggable(true));
+                    Marker marker = map.addMarker(new MarkerOptions()
+                        .position(position).draggable(true)
+                        .icon(markerBitmapDescriptor)
+                            .alpha(alpha)
+                        );
 
                     // I need this to keep information of the item inside the marker
                     marker.setTag(item);
@@ -102,5 +121,7 @@ public class ItemsMapFragment extends Fragment implements OnMapReadyCallback, Go
         intent.putExtra("ITEM", item.id);
         intent.putExtra("ITEM_NEW_LOCATION", marker.getPosition());
         startActivity(intent);
+
+        marker.remove();
     }
 }
