@@ -21,7 +21,6 @@ public class ItemHolder extends RecyclerView.ViewHolder {
     private TextView descTextView;
     private TextView latTextView;
     private TextView lngTextView;
-    private Button updateButton;
     private Button foundButton;
 
     public ItemHolder(View itemView) {
@@ -37,7 +36,6 @@ public class ItemHolder extends RecyclerView.ViewHolder {
         lngTextView = itemView.findViewById(R.id.row_item_lng_text_view);
 
         foundButton = itemView.findViewById(R.id.row_item_found_button);
-        updateButton = itemView.findViewById(R.id.row_item_update_button);
     }
 
     public void setUserName(String name) {
@@ -61,15 +59,6 @@ public class ItemHolder extends RecyclerView.ViewHolder {
 
     public void setItemDescription(String description) {
         descTextView.setText(description);
-    }
-
-    public void shouldItemUpdate(boolean update) {
-        // Hide the update button
-        if (!update) {
-            updateButton.setVisibility(View.INVISIBLE);
-            return;
-        }
-        updateButton.setVisibility(View.VISIBLE);
     }
 
     public void setFoundButton(final Item item) {

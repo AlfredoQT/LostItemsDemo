@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity implements ItemsListFragment
     private void setTabLayoutIcons() {
         TabLayout.Tab tabOne = tabLayout.getTabAt(0);
         if (tabOne != null) {
-            tabOne.setIcon(R.drawable.ic_list_item);
+            tabOne.setIcon(R.drawable.ic_home);
         }
         TabLayout.Tab tabTwo = tabLayout.getTabAt(1);
         if (tabTwo != null) {
