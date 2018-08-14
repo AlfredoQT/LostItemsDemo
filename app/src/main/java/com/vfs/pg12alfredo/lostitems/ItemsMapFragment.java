@@ -55,6 +55,9 @@ public class ItemsMapFragment extends Fragment implements OnMapReadyCallback, Go
         FirestoreUtils.getItemsCollection().addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                // Clear the map
+                map.clear();
+
                 for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                     Item item = document.toObject(Item.class).withId(document.getId());
                     LatLng position = new LatLng(item.getLocation().getLatitude(), item.getLocation().getLongitude());
@@ -121,7 +124,5 @@ public class ItemsMapFragment extends Fragment implements OnMapReadyCallback, Go
         intent.putExtra("ITEM", item.id);
         intent.putExtra("ITEM_NEW_LOCATION", marker.getPosition());
         startActivity(intent);
-
-        marker.remove();
     }
 }
