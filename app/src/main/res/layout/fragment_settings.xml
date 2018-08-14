@@ -36,6 +36,7 @@
 
 
     <Button
+        android:id="@+id/settings_clear_preferences_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Clear preferences"
@@ -43,6 +44,7 @@
         android:layout_marginBottom="32dp"/>
 
     <Button
+        android:id="@+id/settings_signout_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Signout"

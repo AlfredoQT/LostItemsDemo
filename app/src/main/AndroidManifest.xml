@@ -20,11 +20,6 @@
         android:theme="@style/AppTheme">
         <activity android:name=".MainActivity" />
         <activity android:name=".LoginActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity android:name=".SignupActivity" />
         <!--
@@ -40,7 +35,15 @@
             android:value="@string/google_maps_key" />
 
         <activity android:name=".SetItemActivity" />
-        <activity android:name=".ToggleFoundActivity"></activity>
+        <activity android:name=".ToggleFoundActivity" />
+        <activity android:name=".SplashScreenActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".OnboardingActivity"></activity>
     </application>
 
 </manifest>
