@@ -85,9 +85,11 @@ public class ToggleFoundActivity extends AppCompatActivity implements OnMapReady
                     updateButton.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
+                            LatLng markerCoords = selectedMarker.getPosition();
+                            GeoPoint newLocation = new GeoPoint(markerCoords.latitude, markerCoords.longitude);
                             // Start the task
                             // With the toggle
-                            findItemTaskFragment.findItem(documentSnapshot.getId(), !found, location);
+                            findItemTaskFragment.findItem(documentSnapshot.getId(), !found, newLocation);
                         }
                     });
                 }

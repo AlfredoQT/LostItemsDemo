@@ -11,6 +11,7 @@ import android.support.v4.app.Fragment;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -76,7 +77,7 @@ public class FindItemTaskFragment extends Fragment {
             data.put("location", this.location);
 
             FirestoreUtils.getItemsCollection().document(id)
-                .set(data)
+                .set(data, SetOptions.merge())
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {

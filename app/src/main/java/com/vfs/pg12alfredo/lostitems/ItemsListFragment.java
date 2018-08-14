@@ -138,6 +138,9 @@ public class ItemsListFragment extends Fragment {
 
         // Set the layout manager for the recycler view
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
+        // Reverse everything
+        linearLayoutManager.setReverseLayout(true);
+        linearLayoutManager.setStackFromEnd(true);
         recyclerView.setLayoutManager(linearLayoutManager);
 
         // TODO: Refactor this

@@ -2,6 +2,7 @@ package com.vfs.pg12alfredo.lostitems;
 
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -52,6 +53,7 @@ public class ItemRecyclerAdapter extends RecyclerView.Adapter<ItemHolder> {
                     // Call the interface method
                     // Will update a SINGLE item in the recycler view contained in the items list fragment
                     Item item = documentSnapshot.toObject(Item.class).withId(documentSnapshot.getId());
+                    Log.i("RECYCLER", item.toString());
                     onSetupViewHolder.setupItem(holder, item);
                 }
             });
